@@ -82,6 +82,11 @@ from sys import stdout          # Flushing
 
 from shutil import copy # Copying .cap files
 
+# Getting Key presses
+import sys, tty, termios
+from threading import Thread
+
+
 # Executing, communicating with, killing processes
 from subprocess import Popen, call, PIPE
 from signal import SIGINT, SIGTERM
@@ -109,10 +114,8 @@ class _Getch:
 
 class _GetchUnix:
     def __init__(self):
-        import tty, sys
-
-    def __call__(self):
         import sys, tty, termios
+    def __call__(self):
         fd = sys.stdin.fileno()
         old_settings = termios.tcgetattr(fd)
         try:
