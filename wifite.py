@@ -158,7 +158,7 @@ class Input: #a better version/ way to get single chars
         termios.tcsetattr(self.fd, termios.TCSAFLUSH, self.oldterm)
         fcntl.fcntl(self.fd, fcntl.F_SETFL, self.oldflags)
 
-
+Input_Class = Input
 
 ################################
 # GLOBAL VARIABLES IN ALL CAPS #
@@ -669,9 +669,9 @@ def main():
     iface = get_iface()
     
     RUN_CONFIG.THIS_MAC = get_mac_address(iface) # Store current MAC address
-    
     (targets, clients) = scan(iface=iface, channel=RUN_CONFIG.TARGET_CHANNEL)
     
+	
     try:
         index = 0
         while index < len(targets):
@@ -1159,6 +1159,7 @@ def scan(channel=0, iface='', tried_rtl8187_fix=False):
     command.append(iface)
     
     proc = Popen(command, stdout=DN, stderr=DN)
+	Input_Class.Config()
     
     time_started = time.time()
     print GR+' [+] '+G+'initializing scan'+W+' ('+G+iface+W+'), updates at 5 sec intervals, '+G+'CTRL+C'+W+' when ready.'
@@ -1167,7 +1168,7 @@ def scan(channel=0, iface='', tried_rtl8187_fix=False):
         deauth_sent = 0.0
         old_targets = []
         stop_scanning = False
-        while True:
+        while Input_Class.Get().upper() != 'D':
             time.sleep(0.3)
             if not os.path.exists(RUN_CONFIG.temp + 'wifite-01.csv') and time.time() - time_started > 1.0:
                 print R+'\n [!] ERROR!'+W
@@ -1274,7 +1275,7 @@ def scan(channel=0, iface='', tried_rtl8187_fix=False):
                     wps_check_targets(targets, RUN_CONFIG.temp + 'wifite-01.cap', verbose=False)
                 
                 os.system('clear')
-                print GR+'\n [+] '+G+'scanning'+W+' ('+G+iface+W+'), updates at 5 sec intervals, '+G+'CTRL+C'+W+' when ready.\n'
+                print GR+'\n [+] '+G+'scanning'+W+' ('+G+iface+W+'), updates at 5 sec intervals, '+G+'\'D\''+W+' when ready.\n'
                 print "   NUM ESSID                 %sCH  ENCR  POWER  WPS?  CLIENT" % ('BSSID              ' if RUN_CONFIG.SHOW_MAC_IN_SCAN else '')
                 print '   --- --------------------  %s--  ----  -----  ----  ------' % ('-----------------  ' if RUN_CONFIG.SHOW_MAC_IN_SCAN else '')
                 for i, target in enumerate(targets):
@@ -1327,7 +1328,7 @@ def scan(channel=0, iface='', tried_rtl8187_fix=False):
     except KeyboardInterrupt:
         pass
     print ''
-    
+    Input_Class.DeConfig()
     send_interrupt(proc)
     try: os.kill(proc.pid, SIGTERM)
     except OSError: pass
