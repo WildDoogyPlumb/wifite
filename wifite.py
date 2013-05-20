@@ -8,6 +8,7 @@
     author: derv82 at gmail
     author: bwall @bwallHatesTwits (ballastsec@gmail.com)
     author: drone @dronesec (ballastsec@gmail.com)
+	author: Wild_Doogy at yahoo.com (changing input scheme)
 
     Thanks to everyone that contributed to this project.
     If you helped in the past and want your name here, shoot me an email
@@ -83,8 +84,8 @@ from sys import stdout          # Flushing
 from shutil import copy # Copying .cap files
 
 # Getting Key presses
-import sys, tty, termios
-from threading import Thread
+import sys, tty, termios, fcntl
+#from threading import Thread #not needed in new version
 
 
 # Executing, communicating with, killing processes
@@ -101,16 +102,24 @@ import urllib # Check for new versions from the repo
 # http://code.activestate.com/recipes/134892/
 # Plan to use it instead of CTR+C to break loops. 
 ################################
+
+"""  Old way
 class _Getch:
-    """Gets a single character from standard input.  Does not echo to the screen."""
+   	#Gets a single character from standard input.  Does not echo to the screen.
     def __init__(self):
         try:
             self.impl = _GetchUnix()
         except ImportError:
-            print "Cannot find termios or tty"
-
+            print "Could not import tty or termios"
     def __call__(self): return self.impl()
 
+class inputThread(Thread):
+    def __init__(self):  ## to pass a variable to the class add here
+        Thread.__init__(self)
+        self.go = 1 
+    def run(self): 
+        while go:  
+            self.var+=1    
 
 class _GetchUnix:
     def __init__(self):
@@ -128,6 +137,26 @@ class _GetchUnix:
 
 getch = _Getch()
 
+"""
+class Input: #a better version/ way to get single chars
+    def Config(self):
+        import sys, termios, fcntl
+        self.fd = sys.stdin.fileno()
+        self.oldterm = termios.tcgetattr(self.fd)
+        self.newattr = termios.tcgetattr(self.fd)
+        self.newattr[3] = self.newattr[3] & ~termios.ICANON & ~termios.ECHO
+        termios.tcsetattr(self.fd, termios.TCSANOW, self.newattr)
+        self.oldflags = fcntl.fcntl(self.fd, fcntl.F_GETFL)
+        fcntl.fcntl(self.fd, fcntl.F_SETFL, self.oldflags | os.O_NONBLOCK)
+    def Get(self):
+        try:
+            c = sys.stdin.read(1)
+        except IOError:
+            c = ""
+        return c
+    def DeConfig(self):
+        termios.tcsetattr(self.fd, termios.TCSAFLUSH, self.oldterm)
+        fcntl.fcntl(self.fd, fcntl.F_SETFL, self.oldflags)
 
 
 
