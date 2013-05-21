@@ -1158,13 +1158,13 @@ def scan(channel=0, iface='', tried_rtl8187_fix=False):
         command.append('-c')
         command.append(str(channel))
     command.append(iface)
-    #go = 1 #debug
-    #while go:
-    #    a = Input_Class.Get()
-    #    if a:
-    #        print a
-    #    if a == "q":
-    #        go = 0
+    go = 1
+    while go:
+        a = Input_Class.Get()
+        if a:
+            print a
+        if a == "q":
+            go = 0
     
     proc = Popen(command, stdout=DN, stderr=DN)
     
